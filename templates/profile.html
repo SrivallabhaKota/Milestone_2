@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}Profile — FinGoal{% endblock %}
+{% block page_title %}Profile{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>My Profile</h1>
+    <p>Manage your account information and preferences.</p>
+  </div>
+</div>
+
+<!-- ─── Profile Header ──────────────────────────────────────────────────── -->
+<div class="profile-header">
+  <div class="profile-avatar-wrap">
+    {% if current_user.profile_image %}
+      <img src="{{ url_for('static', filename='images/avatars/' ~ current_user.profile_image) }}"
+           alt="Profile" class="profile-avatar" />
+    {% else %}
+      <div class="profile-avatar-initials">{{ current_user.name[:2].upper() }}</div>
+    {% endif %}
+    <label class="profile-avatar-upload" for="avatarUploadBtn" title="Change photo">
+      <i class="fas fa-camera"></i>
+    </label>
+  </div>
+  <div class="profile-info">
+    <h2>{{ current_user.name }}</h2>
+    <p>{{ current_user.email }}</p>
+    {% if current_user.phone %}<p>{{ current_user.phone }}</p>{% endif %}
+    <p style="margin-top:4px; font-size:12px; color:var(--text-muted);">
+      <i class="fas fa-calendar-plus fa-xs"></i>
+      Member since {{ current_user.created_at.strftime('%B %Y') }}
+    </p>
+  </div>
+</div>
+
+<!-- ─── Stats Row ────────────────────────────────────────────────────────── -->
+<div class="profile-stats-row">
+  <div class="profile-stat">
+    <div class="profile-stat-value">{{ current_user.total_goals }}</div>
+    <div class="profile-stat-label">Total Goals</div>
+  </div>
+  <div class="profile-stat">
+    <div class="profile-stat-value" style="color:var(--primary);">{{ current_user.active_goals }}</div>
+    <div class="profile-stat-label">Active</div>
+  </div>
+  <div class="profile-stat">
+    <div class="profile-stat-value" style="color:var(--success);">{{ current_user.completed_goals }}</div>
+    <div class="profile-stat-label">Completed</div>
+  </div>
+  <div class="profile-stat">
+    <div class="profile-stat-value" style="color:var(--success); font-size:15px;">
+      ₹{{ "{:,.0f}".format(current_user.total_saved) }}
+    </div>
+    <div class="profile-stat-label">Total Saved</div>
+  </div>
+  <div class="profile-stat">
+    <div class="profile-stat-value" style="color:var(--warning); font-size:15px;">
+      ₹{{ "{:,.0f}".format(current_user.total_target) }}
+    </div>
+    <div class="profile-stat-label">Total Target</div>
+  </div>
+</div>
+
+<!-- ─── Two-Column Layout ────────────────────────────────────────────────── -->
+<div class="col-2" style="align-items:start;">
+
+  <!-- Edit Profile Form -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fas fa-user-edit"></i> Edit Profile</span>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('profile.profile') }}"
+            enctype="multipart/form-data" novalidate>
+
+        <!-- Hidden file input triggered by camera icon -->
+        <input type="file" id="avatarUploadBtn" name="profile_image"
+               accept="image/*" style="display:none;"
+               onchange="this.form.submit()" />
+
+        <div class="form-group">
+          <label class="form-label" for="edit_name">Full Name <span>*</span></label>
+          <input type="text" id="edit_name" name="name" class="form-control"
+                 value="{{ current_user.name }}" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="edit_phone">Phone Number</label>
+          <input type="tel" id="edit_phone" name="phone" class="form-control"
+                 value="{{ current_user.phone or '' }}"
+                 placeholder="+91 99999 99999" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="edit_currency">Currency</label>
+            <select id="edit_currency" name="currency" class="form-control">
+              <option value="₹" {% if current_user.currency == '₹' %}selected{% endif %}>₹ Indian Rupee</option>
+              <option value="$" {% if current_user.currency == '$' %}selected{% endif %}>$ US Dollar</option>
+              <option value="€" {% if current_user.currency == '€' %}selected{% endif %}>€ Euro</option>
+              <option value="£" {% if current_user.currency == '£' %}selected{% endif %}>£ British Pound</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit_capacity">Monthly Saving Capacity</label>
+            <div class="input-group">
+              <span class="input-prefix">₹</span>
+              <input type="number" id="edit_capacity" name="monthly_saving_capacity"
+                     class="form-control" step="100" min="0"
+                     value="{{ current_user.monthly_saving_capacity or '' }}"
+                     placeholder="e.g. 10000" />
+            </div>
+            <div class="form-hint">Used for smart saving recommendations.</div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Change Password -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fas fa-lock"></i> Change Password</span>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('profile.change_password') }}" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="current_password">Current Password <span>*</span></label>
+          <input type="password" id="current_password" name="current_password"
+                 class="form-control" placeholder="Enter current password" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="new_password">New Password <span>*</span></label>
+          <input type="password" id="new_password" name="new_password"
+                 class="form-control" placeholder="Minimum 6 characters" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="confirm_password">Confirm New Password <span>*</span></label>
+          <input type="password" id="confirm_password" name="confirm_password"
+                 class="form-control" placeholder="Re-enter new password" required />
+        </div>
+        <button type="submit" class="btn btn-outline-primary">
+          <i class="fas fa-key"></i> Update Password
+        </button>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── Account Info Card ───────────────────────────────────────────────── -->
+<div class="card mt-16">
+  <div class="card-header">
+    <span class="card-title"><i class="fas fa-shield-halved"></i> Account Information</span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <div class="info-row" style="padding:12px 20px;">
+      <span class="info-label">Email Address</span>
+      <span class="info-value">{{ current_user.email }}</span>
+    </div>
+    <div class="info-row" style="padding:12px 20px;">
+      <span class="info-label">Account Created</span>
+      <span class="info-value">{{ current_user.created_at.strftime('%d %B %Y, %I:%M %p') }}</span>
+    </div>
+    <div class="info-row" style="padding:12px 20px;">
+      <span class="info-label">Preferred Currency</span>
+      <span class="info-value">{{ current_user.currency }}</span>
+    </div>
+    <div class="info-row" style="padding:12px 20px;">
+      <span class="info-label">Monthly Saving Capacity</span>
+      <span class="info-value">
+        {% if current_user.monthly_saving_capacity %}
+          ₹{{ "{:,.0f}".format(current_user.monthly_saving_capacity) }}/month
+        {% else %}
+          Not set
+        {% endif %}
+      </span>
+    </div>
+    <div style="padding:12px 20px; border-top:1px solid var(--border-light);">
+      <a href="{{ url_for('auth.logout') }}" class="btn btn-outline" style="border-color:var(--danger); color:var(--danger);">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Login — FinGoal{% endblock %}
+{% block auth_content %}
+<div class="auth-card">
+  <div class="auth-logo">
+    <div class="logo-icon"><i class="fas fa-chart-line"></i></div>
+    <span class="auth-logo-text">FinGoal</span>
+  </div>
+
+  <h1 class="auth-title">Welcome back</h1>
+  <p class="auth-subtitle">Sign in to your account to continue</p>
+
+  <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+    <div class="form-group">
+      <label class="form-label" for="email">Email Address <span>*</span></label>
+      <input type="email" id="email" name="email" class="form-control"
+             placeholder="you@example.com" required autocomplete="email" />
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="password">Password <span>*</span></label>
+      <input type="password" id="password" name="password" class="form-control"
+             placeholder="Enter your password" required autocomplete="current-password" />
+    </div>
+    <div class="d-flex align-center justify-between mb-16" style="gap:8px;">
+      <label style="display:flex;align-items:center;gap:7px;font-size:13.5px;cursor:pointer;color:var(--text-secondary);">
+        <input type="checkbox" name="remember" style="accent-color:var(--primary);width:14px;height:14px;" />
+        Remember me
+      </label>
+    </div>
+    <button type="submit" class="btn btn-primary btn-block btn-lg">
+      <i class="fas fa-sign-in-alt"></i> Sign In
+    </button>
+  </form>
+
+  <div class="auth-footer">
+    Don't have an account?
+    <a href="{{ url_for('auth.register') }}" style="font-weight:600;">Create one free</a>
+  </div>
+</div>
+{% endblock %}
