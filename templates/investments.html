@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}Investments — FinGoal{% endblock %}
+{% block page_title %}Investments{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>Investments</h1>
+    <p>Track your personal investment portfolio and monitor performance.</p>
+  </div>
+  <div class="page-header-right">
+    <a href="{{ url_for('investment_new') }}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Add Investment
+    </a>
+  </div>
+</div>
+
+<!-- ─── Summary Stats ─────────────────────────────────────────────────────────── -->
+<div class="stats-grid-5 mb-24">
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div><div class="stat-value">{{ inv_stats.total }}</div><div class="stat-label">Total Investments</div></div>
+      <div class="stat-icon indigo"><i class="fas fa-coins"></i></div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-value" style="font-size:18px;">₹{{ "{:,.0f}".format(inv_stats.total_invested) }}</div>
+        <div class="stat-label">Total Invested</div>
+      </div>
+      <div class="stat-icon blue"><i class="fas fa-arrow-trend-up"></i></div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-value" style="font-size:18px;color:var(--success);">₹{{ "{:,.0f}".format(inv_stats.current_value) }}</div>
+        <div class="stat-label">Portfolio Value</div>
+      </div>
+      <div class="stat-icon teal"><i class="fas fa-wallet"></i></div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-value" style="font-size:18px;color:{% if inv_stats.total_pl >= 0 %}var(--success){% else %}var(--danger){% endif %};">
+          {% if inv_stats.total_pl >= 0 %}+{% endif %}₹{{ "{:,.0f}".format(inv_stats.total_pl) }}
+        </div>
+        <div class="stat-label">Total P&amp;L</div>
+      </div>
+      <div class="stat-icon {% if inv_stats.total_pl >= 0 %}green{% else %}red{% endif %}">
+        <i class="fas {% if inv_stats.total_pl >= 0 %}fa-circle-arrow-up{% else %}fa-circle-arrow-down{% endif %}"></i>
+      </div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-value" style="color:{% if inv_stats.avg_return >= 0 %}var(--success){% else %}var(--danger){% endif %};">
+          {% if inv_stats.avg_return >= 0 %}+{% endif %}{{ inv_stats.avg_return }}%
+        </div>
+        <div class="stat-label">Avg. Return</div>
+      </div>
+      <div class="stat-icon teal"><i class="fas fa-percent"></i></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Filters ───────────────────────────────────────────────────────────────── -->
+<form method="GET" id="filterForm">
+  <div class="filters-bar">
+    <div class="search-input-wrap">
+      <i class="fas fa-search"></i>
+      <input type="text" name="search" class="search-input"
+             placeholder="Search investments..." value="{{ search }}"
+             oninput="this.form.submit()" />
+    </div>
+    <div class="filter-group">
+      <label>Type</label>
+      <select name="inv_type" class="filter-select" onchange="this.form.submit()">
+        <option value="">All Types</option>
+        {% for t in inv_types %}
+        <option value="{{ t }}" {% if selected_type == t %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Status</label>
+      <select name="status" class="filter-select" onchange="this.form.submit()">
+        <option value="">All</option>
+        {% for s in inv_statuses %}
+        <option value="{{ s }}" {% if selected_status == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Sort</label>
+      <select name="sort" class="filter-select" onchange="this.form.submit()">
+        <option value="newest"       {% if selected_sort == 'newest' %}selected{% endif %}>Newest</option>
+        <option value="oldest"       {% if selected_sort == 'oldest' %}selected{% endif %}>Oldest</option>
+        <option value="invested_high"{% if selected_sort == 'invested_high' %}selected{% endif %}>Amount ↑</option>
+        <option value="invested_low" {% if selected_sort == 'invested_low' %}selected{% endif %}>Amount ↓</option>
+        <option value="value_high"   {% if selected_sort == 'value_high' %}selected{% endif %}>Value ↑</option>
+        <option value="maturity"     {% if selected_sort == 'maturity' %}selected{% endif %}>Maturity</option>
+      </select>
+    </div>
+    {% if search or selected_type or selected_status %}
+    <a href="{{ url_for('investments_list') }}" class="btn btn-outline btn-sm">
+      <i class="fas fa-times"></i> Clear
+    </a>
+    {% endif %}
+  </div>
+</form>
+
+<!-- ─── Investment Cards ──────────────────────────────────────────────────────── -->
+{% if investments %}
+  <div class="mb-8 text-sm text-muted">{{ investments|length }} investment{{ 's' if investments|length != 1 }}</div>
+  <div class="goals-grid">
+    {% for inv in investments %}
+    <div class="goal-card">
+      <!-- Header -->
+      <div class="goal-card-header">
+        <div>
+          <div class="goal-card-title">{{ inv.investment_name }}</div>
+          <div class="goal-card-category">
+            <i class="fas {% if inv.investment_type == 'Stocks' %}fa-chart-line{% elif inv.investment_type == 'Gold' %}fa-coins{% elif 'Fund' in inv.investment_type %}fa-chart-pie{% elif 'Deposit' in inv.investment_type %}fa-building-columns{% elif inv.investment_type == 'Bonds' %}fa-file-invoice-dollar{% else %}fa-sack-dollar{% endif %} fa-xs" style="margin-right:4px;"></i>
+            {{ inv.investment_type }}
+          </div>
+        </div>
+        <div class="goal-card-badges">
+          <span class="badge badge-{{ inv.status_class }}">{{ inv.status }}</span>
+          <span class="badge badge-{{ inv.profit_class }}">{{ inv.profit_status }}</span>
+        </div>
+      </div>
+
+      <!-- Amounts -->
+      <div class="goal-card-amounts">
+        <div class="goal-amt-item">
+          <div class="goal-amt-label">Invested</div>
+          <div class="goal-amt-value">₹{{ "{:,.0f}".format(inv.invested_amount) }}</div>
+        </div>
+        <div class="goal-amt-item">
+          <div class="goal-amt-label">Current Value</div>
+          <div class="goal-amt-value {% if inv.profit_loss >= 0 %}green{% else %}red{% endif %}">
+            ₹{{ "{:,.0f}".format(inv.current_value) }}
+          </div>
+        </div>
+        <div class="goal-amt-item">
+          <div class="goal-amt-label">P&amp;L</div>
+          <div class="goal-amt-value {% if inv.profit_loss >= 0 %}green{% else %}red{% endif %}">
+            {% if inv.profit_loss >= 0 %}+{% endif %}₹{{ "{:,.0f}".format(inv.profit_loss) }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Return % -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border-light);">
+        <span style="font-size:12.5px;color:var(--text-secondary);">Return</span>
+        <span style="font-size:15px;font-weight:700;color:{% if inv.return_percentage >= 0 %}var(--success){% else %}var(--danger){% endif %};">
+          {% if inv.return_percentage >= 0 %}▲{% else %}▼{% endif %}
+          {{ inv.return_percentage }}%
+        </span>
+        {% if inv.expected_return_rate %}
+        <span style="font-size:11.5px;color:var(--text-muted);">Expected: {{ inv.expected_return_rate }}%</span>
+        {% endif %}
+      </div>
+
+      <!-- Date & Actions -->
+      <div class="goal-card-footer">
+        <div class="goal-card-date">
+          {% if inv.investment_date %}
+            <i class="fas fa-calendar-alt fa-xs" style="margin-right:4px;"></i>
+            {{ inv.investment_date }}
+          {% endif %}
+          {% if inv.maturity_date %}
+            <span style="margin-left:8px;font-size:11px;color:var(--text-muted);">Matures: {{ inv.maturity_date }}</span>
+          {% endif %}
+        </div>
+        <div class="goal-card-actions">
+          <a href="{{ url_for('investment_edit', inv_id=inv.id) }}"
+             class="btn btn-outline btn-sm" title="Edit">
+            <i class="fas fa-edit"></i>
+          </a>
+          <button class="btn btn-outline btn-sm" title="Delete"
+                  onclick="confirmDelete({{ inv.id }}, '{{ inv.investment_name|replace("'", "\\'") }}', 'investment')">
+            <i class="fas fa-trash" style="color:var(--danger);"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="card">
+    <div class="empty-state">
+      <i class="fas fa-coins"></i>
+      <h3>No investments found</h3>
+      {% if search or selected_type or selected_status %}
+        <p>Try adjusting your filters.</p>
+        <a href="{{ url_for('investments_list') }}" class="btn btn-outline">Clear Filters</a>
+      {% else %}
+        <p>Start tracking your investments to monitor your portfolio performance.</p>
+        <a href="{{ url_for('investment_new') }}" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Add Your First Investment
+        </a>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmDelete(id, name, type) {
+  const titleEl = document.getElementById('deleteModalTitle');
+  const msgEl   = document.getElementById('deleteModalMessage');
+  const formEl  = document.getElementById('deleteForm');
+  if (titleEl) titleEl.textContent = `Delete ${type === 'investment' ? 'Investment' : 'Goal'}`;
+  if (msgEl)   msgEl.textContent   = `Are you sure you want to delete "${name}"? This action cannot be undone.`;
+  if (formEl)  formEl.action       = `/investments/${id}/delete`;
+  const modal = document.getElementById('deleteModal');
+  if (modal) modal.style.display = 'flex';
+}
+function closeDeleteModal() {
+  const modal = document.getElementById('deleteModal');
+  if (modal) modal.style.display = 'none';
+}
+document.getElementById('deleteModal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeDeleteModal();
+});
+</script>
+{% endblock %}

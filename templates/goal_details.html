@@ -3,7 +3,6 @@
 {% block page_title %}Goal Details{% endblock %}
 
 {% block content %}
-<!-- ─── Page Header ──────────────────────────────────────────────────────── -->
 <div class="page-header">
   <div class="page-header-left">
     <h1>{{ goal.goal_name }}</h1>
@@ -14,12 +13,8 @@
     </p>
   </div>
   <div class="page-header-right">
-    <a href="{{ url_for('goals.goals_list') }}" class="btn btn-outline">
-      <i class="fas fa-arrow-left"></i> Back
-    </a>
-    <a href="{{ url_for('goals.edit_goal', goal_id=goal.id) }}" class="btn btn-outline">
-      <i class="fas fa-edit"></i> Edit
-    </a>
+    <a href="{{ url_for('goals_list') }}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+    <a href="{{ url_for('edit_goal', goal_id=goal.id) }}" class="btn btn-outline"><i class="fas fa-edit"></i> Edit</a>
     <button class="btn btn-outline" style="border-color:var(--danger);"
             onclick="confirmDelete({{ goal.id }}, '{{ goal.goal_name|replace("'","\\'")|replace('"','\\"') }}')">
       <i class="fas fa-trash" style="color:var(--danger);"></i>
@@ -27,84 +22,72 @@
   </div>
 </div>
 
-<!-- ─── Detail Layout ───────────────────────────────────────────────────── -->
 <div class="detail-layout">
-
-  <!-- ══ LEFT SIDEBAR ════════════════════════════════════════════════════ -->
+  <!-- ═══ LEFT SIDEBAR ═══════════════════════════════════════════════════ -->
   <div class="detail-sidebar">
 
-    <!-- Smart Status Banner -->
+    <!-- Smart Status -->
     {% set ss = goal.smart_status %}
     <div class="status-banner {{ goal.smart_status_class }}">
-      <i class="fas {% if ss == 'On Track' or ss == 'Completed' %}fa-check-circle
-                    {% elif ss == 'Needs Attention' %}fa-exclamation-circle
-                    {% else %}fa-exclamation-triangle{% endif %}"></i>
+      <i class="fas {% if ss == 'On Track' or ss == 'Completed' %}fa-check-circle{% elif ss == 'Needs Attention' %}fa-exclamation-circle{% else %}fa-exclamation-triangle{% endif %}"></i>
       <div class="status-banner-text">
         <strong>{{ ss }}</strong>
         <span>
-          {% if ss == 'Completed' %}You have reached your goal target!
+          {% if ss == 'Completed' %}You've reached your goal target!
           {% elif ss == 'On Track' %}Great job! You're saving on schedule.
-          {% elif ss == 'Needs Attention' %}You're a bit behind. Consider saving more.
+          {% elif ss == 'Needs Attention' %}You're a bit behind — consider saving more.
           {% else %}You're significantly behind your savings target.
           {% endif %}
         </span>
       </div>
     </div>
 
-    <!-- Savings Capacity Alert -->
+    <!-- Capacity alert -->
     {% if capacity and goal.required_monthly_saving %}
       {% set cap_ok = capacity >= goal.required_monthly_saving %}
       <div class="capacity-banner {{ 'ok' if cap_ok else 'low' }}">
         <i class="fas {{ 'fa-circle-check' if cap_ok else 'fa-circle-exclamation' }}"></i>
         <div>
           {% if cap_ok %}
-            <strong>Saving plan is on track.</strong><br/>
-            Your monthly capacity of ₹{{ "{:,.0f}".format(capacity) }} covers the required ₹{{ "{:,.0f}".format(goal.required_monthly_saving) }}/month.
+            <strong>Saving plan on track.</strong><br/>
+            Your capacity ₹{{ "{:,.0f}".format(capacity) }}/mo covers the required ₹{{ "{:,.0f}".format(goal.required_monthly_saving) }}/mo.
           {% else %}
             <strong>Capacity may not be enough.</strong><br/>
-            You need ₹{{ "{:,.0f}".format(goal.required_monthly_saving) }}/month but your capacity is ₹{{ "{:,.0f}".format(capacity) }}/month.
+            Need ₹{{ "{:,.0f}".format(goal.required_monthly_saving) }}/mo but capacity is ₹{{ "{:,.0f}".format(capacity) }}/mo.
           {% endif %}
         </div>
       </div>
     {% endif %}
 
-    <!-- Progress Card -->
+    <!-- Progress -->
     <div class="card">
       <div class="card-header">
         <span class="card-title"><i class="fas fa-chart-pie"></i> Progress</span>
-        <span style="font-size:22px; font-weight:800; color:var(--primary);">
-          {{ goal.progress_percentage }}%
-        </span>
+        <span style="font-size:22px;font-weight:800;color:var(--primary);">{{ goal.progress_percentage }}%</span>
       </div>
       <div class="card-body">
         <div class="progress-bar-bg progress-bar-lg">
           <div class="progress-bar-fill {% if goal.progress_percentage >= 100 %}green{% elif goal.smart_status == 'Behind Schedule' %}red{% elif goal.smart_status == 'Needs Attention' %}orange{% endif %}"
                style="width:{{ goal.progress_percentage }}%"></div>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:14px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px;">
           <div style="text-align:center;">
-            <div style="font-size:16px; font-weight:700; color:var(--primary);">
-              ₹{{ "{:,.0f}".format(goal.target_amount) }}
-            </div>
-            <div style="font-size:11px; color:var(--text-muted);">Target</div>
+            <div style="font-size:15px;font-weight:700;color:var(--primary);">₹{{ "{:,.0f}".format(goal.target_amount) }}</div>
+            <div style="font-size:11px;color:var(--text-muted);">Target</div>
           </div>
           <div style="text-align:center;">
-            <div style="font-size:16px; font-weight:700; color:var(--success);">
-              ₹{{ "{:,.0f}".format(goal.current_amount) }}
-            </div>
-            <div style="font-size:11px; color:var(--text-muted);">Saved</div>
+            <div style="font-size:15px;font-weight:700;color:var(--success);">₹{{ "{:,.0f}".format(goal.current_amount) }}</div>
+            <div style="font-size:11px;color:var(--text-muted);">Saved</div>
           </div>
           <div style="text-align:center;">
-            <div style="font-size:16px; font-weight:700; color:var(--warning);">
-              ₹{{ "{:,.0f}".format(goal.remaining_amount) }}
-            </div>
-            <div style="font-size:11px; color:var(--text-muted);">Remaining</div>
+            <div style="font-size:15px;font-weight:700;color:var(--warning);">₹{{ "{:,.0f}".format(goal.remaining_amount) }}</div>
+            <div style="font-size:11px;color:var(--text-muted);">Remaining</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Savings Requirements -->
+    <!-- Required savings -->
     <div class="card">
       <div class="card-header">
         <span class="card-title"><i class="fas fa-calculator"></i> Required Savings</span>
@@ -113,30 +96,22 @@
         <div class="info-row" style="padding:12px 20px;">
           <span class="info-label">Monthly</span>
           <span class="info-value" style="color:var(--primary);">
-            {% if goal.required_monthly_saving %}
-              ₹{{ "{:,.0f}".format(goal.required_monthly_saving) }}<span style="font-size:11px; color:var(--text-muted);">/mo</span>
-            {% else %}—{% endif %}
+            {% if goal.required_monthly_saving %}₹{{ "{:,.0f}".format(goal.required_monthly_saving) }}<span style="font-size:11px;color:var(--text-muted);">/mo</span>{% else %}—{% endif %}
           </span>
         </div>
         <div class="info-row" style="padding:12px 20px;">
           <span class="info-label">Weekly</span>
           <span class="info-value" style="color:var(--primary);">
-            {% if goal.required_weekly_saving %}
-              ₹{{ "{:,.0f}".format(goal.required_weekly_saving) }}<span style="font-size:11px; color:var(--text-muted);">/wk</span>
-            {% else %}—{% endif %}
+            {% if goal.required_weekly_saving %}₹{{ "{:,.0f}".format(goal.required_weekly_saving) }}<span style="font-size:11px;color:var(--text-muted);">/wk</span>{% else %}—{% endif %}
           </span>
         </div>
         <div class="info-row" style="padding:12px 20px;">
           <span class="info-label">Days Left</span>
           <span class="info-value">
             {% if goal.days_left is not none %}
-              {% if goal.days_left < 0 %}
-                <span style="color:var(--danger);">{{ goal.days_left|abs }} days overdue</span>
-              {% elif goal.days_left == 0 %}
-                <span style="color:var(--warning);">Due today</span>
-              {% else %}
-                {{ goal.days_left }} days
-              {% endif %}
+              {% if goal.days_left < 0 %}<span style="color:var(--danger);">{{ goal.days_left|abs }} days overdue</span>
+              {% elif goal.days_left == 0 %}<span style="color:var(--warning);">Due today</span>
+              {% else %}{{ goal.days_left }} days{% endif %}
             {% else %}—{% endif %}
           </span>
         </div>
@@ -145,53 +120,34 @@
 
     <!-- Goal Info -->
     <div class="card">
-      <div class="card-header">
-        <span class="card-title"><i class="fas fa-info-circle"></i> Goal Info</span>
-      </div>
+      <div class="card-header"><span class="card-title"><i class="fas fa-info-circle"></i> Goal Info</span></div>
       <div class="card-body" style="padding:0;">
         {% if goal.description %}
-        <div style="padding:12px 20px; border-bottom:1px solid var(--border-light); font-size:13.5px; color:var(--text-secondary);">
-          {{ goal.description }}
-        </div>
+        <div style="padding:12px 20px;border-bottom:1px solid var(--border-light);font-size:13.5px;color:var(--text-secondary);">{{ goal.description }}</div>
         {% endif %}
-        <div class="info-row" style="padding:10px 20px;">
-          <span class="info-label">Type</span>
-          <span class="info-value">{{ goal.goal_type or '—' }}</span>
-        </div>
-        <div class="info-row" style="padding:10px 20px;">
-          <span class="info-label">Start Date</span>
-          <span class="info-value">{{ goal.start_date.strftime('%d %b %Y') if goal.start_date else '—' }}</span>
-        </div>
-        <div class="info-row" style="padding:10px 20px;">
-          <span class="info-label">Target Date</span>
-          <span class="info-value">{{ goal.target_date.strftime('%d %b %Y') if goal.target_date else '—' }}</span>
-        </div>
-        <div class="info-row" style="padding:10px 20px;">
-          <span class="info-label">Created</span>
-          <span class="info-value">{{ goal.created_at.strftime('%d %b %Y') }}</span>
-        </div>
+        <div class="info-row" style="padding:10px 20px;"><span class="info-label">Type</span><span class="info-value">{{ goal.goal_type or '—' }}</span></div>
+        <div class="info-row" style="padding:10px 20px;"><span class="info-label">Start Date</span><span class="info-value">{{ goal.start_date or '—' }}</span></div>
+        <div class="info-row" style="padding:10px 20px;"><span class="info-label">Target Date</span><span class="info-value">{{ goal.target_date or '—' }}</span></div>
         {% if goal.notes %}
-        <div style="padding:10px 20px; font-size:12.5px; color:var(--text-secondary); background:var(--bg); border-top:1px solid var(--border-light);">
+        <div style="padding:10px 20px;font-size:12.5px;color:var(--text-secondary);background:var(--bg);border-top:1px solid var(--border-light);">
           <i class="fas fa-note-sticky fa-xs" style="margin-right:4px;"></i>{{ goal.notes }}
         </div>
         {% endif %}
       </div>
     </div>
 
-    <!-- Add Savings Button -->
     {% if goal.status != 'Completed' %}
     <button class="btn btn-success btn-block btn-lg"
             onclick="document.getElementById('savingsPanel').style.display='flex'">
       <i class="fas fa-plus"></i> Add Savings
     </button>
     {% endif %}
-
   </div>
 
-  <!-- ══ MAIN CONTENT ════════════════════════════════════════════════════ -->
+  <!-- ═══ MAIN ═══════════════════════════════════════════════════════════ -->
   <div class="detail-main">
 
-    <!-- Milestones / Parts -->
+    <!-- Milestones -->
     <div class="card">
       <div class="card-header">
         <span class="card-title"><i class="fas fa-list-check"></i> Milestones</span>
@@ -201,9 +157,9 @@
         </button>
       </div>
       <div class="card-body">
-        {% if goal.parts %}
+        {% if parts %}
           <div class="milestone-list">
-            {% for part in goal.parts %}
+            {% for part in parts %}
             <div class="milestone-item">
               <div class="milestone-connector">
                 <div class="milestone-dot {% if part.status == 'Completed' %}done{% elif part.status == 'In Progress' %}active{% elif part.status == 'On Hold' %}hold{% endif %}"></div>
@@ -216,28 +172,23 @@
                     <div class="milestone-meta">
                       Target: ₹{{ "{:,.0f}".format(part.target_amount) }} &nbsp;|&nbsp;
                       Saved: ₹{{ "{:,.0f}".format(part.saved_amount) }}
-                      {% if part.due_date %}&nbsp;|&nbsp; Due: {{ part.due_date.strftime('%d %b %Y') }}{% endif %}
+                      {% if part.due_date %}&nbsp;|&nbsp; Due: {{ part.due_date }}{% endif %}
                     </div>
                   </div>
-                  <div style="display:flex; align-items:center; gap:8px;">
-                    <span class="badge badge-{% if part.status == 'Completed' %}success{% elif part.status == 'In Progress' %}primary{% elif part.status == 'On Hold' %}warning{% else %}secondary{% endif %}">
-                      {{ part.status }}
-                    </span>
-                    <div class="milestone-actions">
-                      <button class="btn btn-ghost btn-sm"
-                              title="Update"
-                              onclick="openUpdateMilestone({{ part.id }}, '{{ part.part_name|replace("'","\\'")|replace('"','\\"') }}', {{ part.target_amount }}, {{ part.saved_amount }}, '{{ part.status }}')">
-                        <i class="fas fa-edit"></i>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="badge badge-{{ part.status_class }}">{{ part.status }}</span>
+                    <button class="btn btn-ghost btn-sm"
+                            onclick="openUpdateMilestone({{ part.id }}, '{{ part.part_name|replace("'","\\'")|replace('"','\\"') }}', {{ part.target_amount }}, {{ part.saved_amount }}, '{{ part.status }}')">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <form method="POST"
+                          action="{{ url_for('delete_milestone', goal_id=goal.id, mid=part.id) }}"
+                          style="display:inline;"
+                          onsubmit="return confirm('Delete this milestone?')">
+                      <button type="submit" class="btn btn-ghost btn-sm">
+                        <i class="fas fa-times" style="color:var(--danger);"></i>
                       </button>
-                      <form method="POST"
-                            action="{{ url_for('goals.delete_milestone', goal_id=goal.id, mid=part.id) }}"
-                            style="display:inline;"
-                            onsubmit="return confirm('Delete this milestone?')">
-                        <button type="submit" class="btn btn-ghost btn-sm">
-                          <i class="fas fa-times" style="color:var(--danger);"></i>
-                        </button>
-                      </form>
-                    </div>
+                    </form>
                   </div>
                 </div>
                 <div>
@@ -257,7 +208,7 @@
           <div class="empty-state" style="padding:28px;">
             <i class="fas fa-list-check" style="font-size:28px;"></i>
             <h3 style="font-size:15px;">No milestones yet</h3>
-            <p>Break your goal into smaller parts to track progress step by step.</p>
+            <p>Break your goal into smaller parts to track step-by-step.</p>
           </div>
         {% endif %}
       </div>
@@ -267,26 +218,21 @@
     <div class="card">
       <div class="card-header">
         <span class="card-title"><i class="fas fa-history"></i> Savings History</span>
-        <span class="badge badge-secondary">{{ goal.savings|length }} records</span>
+        <span class="badge badge-secondary">{{ savings|length }} records</span>
       </div>
-      {% if goal.savings %}
+      {% if savings %}
       <div class="card-body" style="padding:0;">
         <div class="table-wrap">
           <table>
             <thead>
-              <tr>
-                <th>#</th>
-                <th>Date</th>
-                <th>Amount</th>
-                <th>Note</th>
-              </tr>
+              <tr><th>#</th><th>Date</th><th>Amount</th><th>Note</th></tr>
             </thead>
             <tbody>
-              {% for record in goal.savings %}
+              {% for record in savings %}
               <tr>
-                <td style="color:var(--text-muted); width:40px;">{{ loop.index }}</td>
-                <td>{{ record.saving_date.strftime('%d %b %Y') }}</td>
-                <td style="font-weight:700; color:var(--success);">₹{{ "{:,.2f}".format(record.amount) }}</td>
+                <td style="color:var(--text-muted);width:40px;">{{ loop.index }}</td>
+                <td>{{ record.saving_date }}</td>
+                <td style="font-weight:700;color:var(--success);">₹{{ "{:,.2f}".format(record.amount) }}</td>
                 <td style="color:var(--text-secondary);">{{ record.note or '—' }}</td>
               </tr>
               {% endfor %}
@@ -294,7 +240,7 @@
           </table>
         </div>
         <div class="card-footer">
-          Total logged: <strong>₹{{ "{:,.2f}".format(goal.savings|sum(attribute='amount')) }}</strong>
+          Total logged: <strong>₹{{ "{:,.2f}".format(savings|sum(attribute='amount')) }}</strong>
         </div>
       </div>
       {% else %}
@@ -302,106 +248,84 @@
         <div class="empty-state" style="padding:20px;">
           <i class="fas fa-piggy-bank" style="font-size:26px;"></i>
           <h3 style="font-size:15px;">No savings records</h3>
-          <p>Start adding savings entries to track your progress.</p>
+          <p>Start adding savings to track your progress.</p>
         </div>
       </div>
       {% endif %}
     </div>
-
   </div>
 </div>
 
-<!-- ─── Add Savings Panel ────────────────────────────────────────────────── -->
+<!-- ─── Add Savings Panel ─────────────────────────────────────────────────── -->
 <div id="savingsPanel" class="panel-backdrop" style="display:none;"
      onclick="if(event.target===this) this.style.display='none'">
   <div class="panel-box">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <h3 style="font-size:17px; font-weight:700;">
-        <i class="fas fa-piggy-bank" style="color:var(--success); margin-right:8px;"></i>
-        Add Savings
-      </h3>
-      <button class="btn btn-ghost" onclick="document.getElementById('savingsPanel').style.display='none'">
-        <i class="fas fa-times"></i>
-      </button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h3 style="font-size:17px;font-weight:700;"><i class="fas fa-piggy-bank" style="color:var(--success);margin-right:8px;"></i>Add Savings</h3>
+      <button class="btn btn-ghost" onclick="document.getElementById('savingsPanel').style.display='none'"><i class="fas fa-times"></i></button>
     </div>
-    <form method="POST" action="{{ url_for('goals.add_savings', goal_id=goal.id) }}">
+    <form method="POST" action="{{ url_for('add_savings', goal_id=goal.id) }}">
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label" for="savings_amount">Amount <span>*</span></label>
-          <div class="input-group">
-            <span class="input-prefix">₹</span>
-            <input type="number" id="savings_amount" name="amount" class="form-control"
-                   placeholder="0.00" step="0.01" min="0.01" required />
+          <label class="form-label">Amount <span>*</span></label>
+          <div class="input-group"><span class="input-prefix">₹</span>
+            <input type="number" name="amount" class="form-control" placeholder="0.00" step="0.01" min="0.01" required />
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label" for="saving_date">Date <span>*</span></label>
-          <input type="date" id="saving_date" name="saving_date" class="form-control"
-                 value="{{ today }}" required />
+          <label class="form-label">Date <span>*</span></label>
+          <input type="date" name="saving_date" class="form-control" value="{{ today }}" required />
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label" for="saving_note">Note</label>
-        <input type="text" id="saving_note" name="note" class="form-control"
-               placeholder="e.g. Monthly savings, Bonus..." />
+        <label class="form-label">Note</label>
+        <input type="text" name="note" class="form-control" placeholder="e.g. Monthly savings, Bonus..." />
       </div>
-      <div style="background:var(--bg); border-radius:var(--radius); padding:10px 14px; margin-bottom:16px; font-size:13px; color:var(--text-secondary);">
-        <i class="fas fa-info-circle" style="margin-right:6px; color:var(--primary);"></i>
+      <div style="background:var(--bg);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--text-secondary);">
+        <i class="fas fa-info-circle" style="margin-right:6px;color:var(--primary);"></i>
         Current: <strong>₹{{ "{:,.0f}".format(goal.current_amount) }}</strong> &nbsp;|&nbsp;
         Remaining: <strong>₹{{ "{:,.0f}".format(goal.remaining_amount) }}</strong>
       </div>
-      <button type="submit" class="btn btn-success btn-block">
-        <i class="fas fa-check"></i> Add Savings
-      </button>
+      <button type="submit" class="btn btn-success btn-block"><i class="fas fa-check"></i> Add Savings</button>
     </form>
   </div>
 </div>
 
-<!-- ─── Add Milestone Panel ──────────────────────────────────────────────── -->
+<!-- ─── Add Milestone Panel ───────────────────────────────────────────────── -->
 <div id="milestonePanel" class="panel-backdrop" style="display:none;"
      onclick="if(event.target===this) this.style.display='none'">
   <div class="panel-box">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <h3 style="font-size:17px; font-weight:700;">
-        <i class="fas fa-list-check" style="color:var(--primary); margin-right:8px;"></i>
-        Add Milestone
-      </h3>
-      <button class="btn btn-ghost" onclick="document.getElementById('milestonePanel').style.display='none'">
-        <i class="fas fa-times"></i>
-      </button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h3 style="font-size:17px;font-weight:700;"><i class="fas fa-list-check" style="color:var(--primary);margin-right:8px;"></i>Add Milestone</h3>
+      <button class="btn btn-ghost" onclick="document.getElementById('milestonePanel').style.display='none'"><i class="fas fa-times"></i></button>
     </div>
-    <form method="POST" action="{{ url_for('goals.add_milestone', goal_id=goal.id) }}">
+    <form method="POST" action="{{ url_for('add_milestone', goal_id=goal.id) }}">
       <div class="form-group">
-        <label class="form-label" for="part_name">Milestone Name <span>*</span></label>
-        <input type="text" id="part_name" name="part_name" class="form-control"
-               placeholder="e.g. Part 1 — First ₹20,000" required />
+        <label class="form-label">Milestone Name <span>*</span></label>
+        <input type="text" name="part_name" class="form-control" placeholder="e.g. Part 1 — First ₹20,000" required />
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label" for="ms_target">Target Amount <span>*</span></label>
-          <div class="input-group">
-            <span class="input-prefix">₹</span>
-            <input type="number" id="ms_target" name="target_amount" class="form-control"
-                   placeholder="0.00" step="0.01" min="1" required />
+          <label class="form-label">Target Amount <span>*</span></label>
+          <div class="input-group"><span class="input-prefix">₹</span>
+            <input type="number" name="target_amount" class="form-control" placeholder="0.00" step="0.01" min="1" required />
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label" for="ms_saved">Amount Saved</label>
-          <div class="input-group">
-            <span class="input-prefix">₹</span>
-            <input type="number" id="ms_saved" name="saved_amount" class="form-control"
-                   placeholder="0.00" step="0.01" min="0" value="0" />
+          <label class="form-label">Amount Saved</label>
+          <div class="input-group"><span class="input-prefix">₹</span>
+            <input type="number" name="saved_amount" class="form-control" placeholder="0.00" step="0.01" min="0" value="0" />
           </div>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label" for="ms_due">Due Date</label>
-          <input type="date" id="ms_due" name="due_date" class="form-control" />
+          <label class="form-label">Due Date</label>
+          <input type="date" name="due_date" class="form-control" />
         </div>
         <div class="form-group">
-          <label class="form-label" for="part_status">Status</label>
-          <select id="part_status" name="part_status" class="form-control">
+          <label class="form-label">Status</label>
+          <select name="part_status" class="form-control">
             <option value="Pending">Pending</option>
             <option value="In Progress">In Progress</option>
             <option value="On Hold">On Hold</option>
@@ -409,9 +333,7 @@
           </select>
         </div>
       </div>
-      <button type="submit" class="btn btn-primary btn-block">
-        <i class="fas fa-plus"></i> Add Milestone
-      </button>
+      <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-plus"></i> Add Milestone</button>
     </form>
   </div>
 </div>
@@ -420,20 +342,16 @@
 <div id="updateMilestonePanel" class="panel-backdrop" style="display:none;"
      onclick="if(event.target===this) this.style.display='none'">
   <div class="panel-box">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <h3 style="font-size:17px; font-weight:700;" id="updateMilestoneTitle">Update Milestone</h3>
-      <button class="btn btn-ghost" onclick="document.getElementById('updateMilestonePanel').style.display='none'">
-        <i class="fas fa-times"></i>
-      </button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h3 style="font-size:17px;font-weight:700;" id="updateMilestoneTitle">Update Milestone</h3>
+      <button class="btn btn-ghost" onclick="document.getElementById('updateMilestonePanel').style.display='none'"><i class="fas fa-times"></i></button>
     </div>
     <form method="POST" id="updateMilestoneForm">
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Amount Saved</label>
-          <div class="input-group">
-            <span class="input-prefix">₹</span>
-            <input type="number" id="um_saved" name="saved_amount" class="form-control"
-                   step="0.01" min="0" />
+          <div class="input-group"><span class="input-prefix">₹</span>
+            <input type="number" id="um_saved" name="saved_amount" class="form-control" step="0.01" min="0" />
           </div>
           <div class="form-hint" id="um_target_hint"></div>
         </div>
@@ -447,9 +365,7 @@
           </select>
         </div>
       </div>
-      <button type="submit" class="btn btn-primary btn-block">
-        <i class="fas fa-save"></i> Save Changes
-      </button>
+      <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-save"></i> Save Changes</button>
     </form>
   </div>
 </div>
@@ -466,14 +382,12 @@ function confirmDelete(goalId, goalName) {
 function closeDeleteModal() {
   document.getElementById('deleteModal').style.display = 'none';
 }
-document.getElementById('deleteModal').addEventListener('click', function(e) {
-  if (e.target === this) closeDeleteModal();
+document.getElementById('deleteModal')?.addEventListener('click', e => {
+  if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
 });
-
 function openUpdateMilestone(partId, name, target, saved, status) {
   document.getElementById('updateMilestoneTitle').textContent = `Update: ${name}`;
-  document.getElementById('updateMilestoneForm').action =
-    `/goals/{{ goal.id }}/milestones/${partId}/update`;
+  document.getElementById('updateMilestoneForm').action = `/goals/{{ goal.id }}/milestones/${partId}/update`;
   document.getElementById('um_saved').value = saved;
   document.getElementById('um_target_hint').textContent = `Target: ₹${target.toLocaleString('en-IN')}`;
   const sel = document.getElementById('um_status');

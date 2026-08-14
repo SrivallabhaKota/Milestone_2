@@ -757,8 +757,118 @@ tbody tr:hover td { background: var(--bg); }
   .profile-stats-row { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr; }
-  .auth-card { padding: 28px 20px; }
-  .goal-card-amounts { grid-template-columns: 1fr 1fr; }
-  .profile-header { flex-direction: column; text-align: center; }
-}
+
+/* ─── Additional Classes (refactor additions) ───────────────────────────── */
+
+/* 5-column stats grid */
+.stats-grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+
+/* Section Heading */
+.section-heading { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--text-muted); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--border-light); }
+.section-heading i { margin-right: 7px; color: var(--primary); }
+
+/* Stat icon color variants */
+.stat-icon.purple { background: #EDE9FE; color: #7C3AED; }
+.stat-icon.gray   { background: #F1F5F9; color: #6B7280; }
+.stat-icon.teal   { background: #CCFBF1; color: #0D9488; }
+.stat-icon.red    { background: var(--danger-light); color: var(--danger); }
+.stat-icon.indigo { background: #EEF2FF; color: #4F46E5; }
+
+/* Goal amount value colors */
+.goal-amt-value.green  { color: var(--success); }
+.goal-amt-value.red    { color: var(--danger); }
+.goal-amt-value.orange { color: var(--warning); }
+
+/* col-3 */
+.col-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+/* Profile */
+.profile-stat { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; text-align: center; box-shadow: var(--shadow-sm); }
+.profile-stat-value { font-size: 22px; font-weight: 800; color: var(--text-primary); }
+.profile-stat-label { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+.profile-header { display: flex; align-items: center; gap: 20px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 24px; margin-bottom: 20px; box-shadow: var(--shadow-sm); }
+.profile-avatar-initials { width: 72px; height: 72px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 800; flex-shrink: 0; }
+.profile-info h2 { font-size: 20px; font-weight: 700; margin-bottom: 3px; }
+.profile-info p  { font-size: 13.5px; color: var(--text-secondary); margin: 1px 0; }
+
+/* Panel backdrop */
+.panel-backdrop { position: fixed; inset: 0; z-index: 1100; background: rgba(15,23,42,.5); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+.panel-box { background: var(--card); border-radius: var(--radius-xl); padding: 28px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-md); animation: slideUp .2s ease; }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Table */
+.table-wrap { overflow-x: auto; }
+.table-wrap table { width: 100%; border-collapse: collapse; }
+.table-wrap th, .table-wrap td { padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--border-light); font-size: 13.5px; }
+.table-wrap th { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); background: var(--bg); }
+.table-wrap tr:hover td { background: var(--primary-light); }
+
+.card-footer { padding: 12px 20px; background: var(--bg); border-top: 1px solid var(--border-light); font-size: 13.5px; color: var(--text-secondary); border-radius: 0 0 var(--radius-xl) var(--radius-xl); }
+
+/* Goal detail layout */
+.detail-layout { display: grid; grid-template-columns: 300px 1fr; gap: 20px; align-items: start; }
+.detail-sidebar, .detail-main { display: flex; flex-direction: column; gap: 16px; }
+
+/* Status banners */
+.status-banner { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: var(--radius-lg); border-left: 4px solid; }
+.status-banner.success  { background: var(--success-light); border-color: var(--success); color: var(--success); }
+.status-banner.warning  { background: var(--warning-light); border-color: var(--warning); color: var(--warning); }
+.status-banner.danger   { background: var(--danger-light);  border-color: var(--danger);  color: var(--danger); }
+.status-banner.secondary{ background: #F8FAFC; border-color: var(--secondary); color: var(--secondary); }
+.status-banner i { font-size: 18px; margin-top: 2px; flex-shrink: 0; }
+.status-banner-text { font-size: 13px; line-height: 1.5; }
+.status-banner-text strong { display: block; font-weight: 700; margin-bottom: 2px; }
+
+.capacity-banner { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: var(--radius); font-size: 13px; line-height: 1.5; }
+.capacity-banner.ok  { background: var(--success-light); color: var(--success); }
+.capacity-banner.low { background: var(--warning-light); color: var(--warning); }
+.capacity-banner i { font-size: 16px; margin-top: 2px; }
+
+/* Milestone list */
+.milestone-list { display: flex; flex-direction: column; }
+.milestone-item { display: flex; gap: 12px; }
+.milestone-connector { display: flex; flex-direction: column; align-items: center; }
+.milestone-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; border: 2px solid var(--border); background: #fff; }
+.milestone-dot.done   { background: var(--success); border-color: var(--success); }
+.milestone-dot.active { background: var(--primary); border-color: var(--primary); }
+.milestone-dot.hold   { background: var(--warning); border-color: var(--warning); }
+.milestone-line { width: 2px; flex: 1; background: var(--border-light); min-height: 20px; }
+.milestone-card { flex: 1; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; background: var(--card); }
+.milestone-card.completed   { background: var(--success-light); border-color: #bbf7d0; }
+.milestone-card.in-progress { background: var(--primary-light); border-color: #bfdbfe; }
+.milestone-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 8px; }
+.milestone-name { font-weight: 700; font-size: 13.5px; margin-bottom: 2px; }
+.milestone-meta { font-size: 12px; color: var(--text-muted); }
+
+/* Info rows */
+.info-row { display: flex; justify-content: space-between; align-items: center; font-size: 13.5px; border-bottom: 1px solid var(--border-light); }
+.info-row:last-child { border-bottom: none; }
+.info-label { color: var(--text-muted); }
+.info-value  { font-weight: 600; color: var(--text-primary); }
+
+/* Progress bar sizes */
+.progress-bar-lg { height: 9px; }
+
+/* Helpers */
+.text-sm    { font-size: 13px; }
+.text-muted { color: var(--text-muted); }
+.mb-8  { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-24 { margin-bottom: 24px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.btn-success  { background: var(--success); color: #fff; border-color: var(--success); }
+.btn-success:hover { background: #15803D; border-color: #15803D; }
+.btn-block { width: 100%; justify-content: center; }
+.btn-ghost { background: transparent; border: none; color: var(--text-secondary); padding: 4px 8px; cursor: pointer; border-radius: var(--radius); }
+.btn-ghost:hover { background: var(--bg); }
+.section-divider { border: none; border-top: 1px solid var(--border-light); margin: 16px 0; }
+.form-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--text-muted); margin-bottom: 14px; }
+
+/* Responsive */
+@media (max-width: 1200px) { .stats-grid-5 { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 1100px) { .detail-layout { grid-template-columns: 1fr; } .col-3 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 900px)  { .stats-grid-5 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px)  { .col-2, .col-3 { grid-template-columns: 1fr; } }
+@media (max-width: 480px)  { .stats-grid-5 { grid-template-columns: 1fr; } .col-3 { grid-template-columns: 1fr; } }

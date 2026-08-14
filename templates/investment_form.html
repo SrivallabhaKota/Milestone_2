@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}{% if edit %}Edit Investment{% else %}Add Investment{% endif %} — FinGoal{% endblock %}
+{% block page_title %}{% if edit %}Edit Investment{% else %}Add Investment{% endif %}{% endblock %}
+
+{% block head %}
+<script src="{{ url_for('static', filename='js/investments.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>{% if edit %}Edit Investment{% else %}Add New Investment{% endif %}</h1>
+    <p>{% if edit %}Update the details for "{{ inv.investment_name }}"{% else %}Record a new investment to track its performance.{% endif %}</p>
+  </div>
+  <div class="page-header-right">
+    <a href="{{ url_for('investments_list') }}" class="btn btn-outline">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start;">
+
+  <!-- Form -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">
+        <i class="fas fa-{% if edit %}edit{% else %}plus-circle{% endif %}"></i>
+        Investment Details
+      </span>
+    </div>
+    <div class="card-body">
+      <form method="POST"
+            action="{% if edit %}{{ url_for('investment_edit', inv_id=inv.id) }}{% else %}{{ url_for('investment_new') }}{% endif %}"
+            id="investmentForm" novalidate>
+
+        <div class="form-section-title">Basic Information</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="investment_name">Investment Name <span>*</span></label>
+            <input type="text" id="investment_name" name="investment_name" class="form-control"
+                   placeholder="e.g. SBI Mutual Fund"
+                   value="{{ inv.investment_name if edit else '' }}" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="investment_type">Investment Type <span>*</span></label>
+            <select id="investment_type" name="investment_type" class="form-control">
+              {% for t in inv_types %}
+              <option value="{{ t }}" {% if edit and inv.investment_type == t %}selected{% endif %}>{{ t }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <hr class="section-divider" />
+        <div class="form-section-title">Financial Details</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="invested_amount">Invested Amount <span>*</span></label>
+            <div class="input-group">
+              <span class="input-prefix">₹</span>
+              <input type="number" id="invested_amount" name="invested_amount" class="form-control"
+                     placeholder="0.00" step="0.01" min="0.01"
+                     value="{{ inv.invested_amount if edit else '' }}" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="current_value">Current Value <span>*</span></label>
+            <div class="input-group">
+              <span class="input-prefix">₹</span>
+              <input type="number" id="current_value" name="current_value" class="form-control"
+                     placeholder="0.00" step="0.01" min="0"
+                     value="{{ inv.current_value if edit else '' }}" required />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="expected_return_rate">Expected Return Rate (%)</label>
+            <input type="number" id="expected_return_rate" name="expected_return_rate"
+                   class="form-control" placeholder="e.g. 12" step="0.1" min="0"
+                   value="{{ inv.expected_return_rate if edit else '' }}" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="inv_status">Status</label>
+            <select id="inv_status" name="status" class="form-control">
+              {% for s in inv_statuses %}
+              <option value="{{ s }}" {% if edit and inv.status == s %}selected{% elif not edit and s == 'Active' %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <hr class="section-divider" />
+        <div class="form-section-title">Dates</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="investment_date">Investment Date</label>
+            <input type="date" id="investment_date" name="investment_date" class="form-control"
+                   value="{{ inv.investment_date if edit else today }}" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="maturity_date">Maturity / Target Date</label>
+            <input type="date" id="maturity_date" name="maturity_date" class="form-control"
+                   value="{{ inv.maturity_date if edit else '' }}" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="inv_notes">Notes</label>
+          <textarea id="inv_notes" name="notes" class="form-control"
+                    placeholder="Any notes about this investment...">{{ inv.notes if edit else '' }}</textarea>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:4px;">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-{% if edit %}save{% else %}check{% endif %}"></i>
+            {% if edit %}Save Changes{% else %}Add Investment{% endif %}
+          </button>
+          <a href="{{ url_for('investments_list') }}" class="btn btn-outline btn-lg">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Live P&L Preview -->
+  <div style="position:sticky;top:80px;">
+    <div class="calc-preview" id="invPreview">
+      <h4><i class="fas fa-calculator"></i> Live P&L Preview</h4>
+      <div class="calc-row">
+        <span class="calc-label">Invested</span>
+        <span class="calc-value" id="prev-invested">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">Current Value</span>
+        <span class="calc-value" id="prev-current">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">Profit / Loss</span>
+        <span class="calc-value" id="prev-pl">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">Return %</span>
+        <span class="calc-value" id="prev-return">—</span>
+      </div>
+      <div id="prev-status-badge" style="margin-top:14px;text-align:center;"></div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

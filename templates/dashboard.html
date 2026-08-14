@@ -3,228 +3,291 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
-<!-- ─── Page Header ──────────────────────────────────────────────────────── -->
 <div class="page-header">
   <div class="page-header-left">
     <h1>Dashboard</h1>
-    <p>Here's your financial goals overview, {{ current_user.name.split()[0] }}.</p>
+    <p>Your complete financial overview — goals &amp; investments at a glance.</p>
   </div>
   <div class="page-header-right">
-    <a href="{{ url_for('goals.goal_planning') }}" class="btn btn-primary">
+    <a href="{{ url_for('goal_planning') }}" class="btn btn-primary">
       <i class="fas fa-plus"></i> New Goal
+    </a>
+    <a href="{{ url_for('investment_new') }}" class="btn btn-outline">
+      <i class="fas fa-plus"></i> Add Investment
     </a>
   </div>
 </div>
 
-<!-- ─── Stats Grid ───────────────────────────────────────────────────────── -->
-<div class="stats-grid">
+<!-- ─── Section: Goals ───────────────────────────────────────────────────────── -->
+<div class="section-heading">
+  <i class="fas fa-bullseye"></i> Goal Planning Summary
+</div>
+<div class="stats-grid mb-24">
   <div class="stat-card">
     <div class="stat-card-top">
       <div>
-        <div class="stat-value">{{ stats.total_goals }}</div>
+        <div class="stat-value">{{ goal_stats.total }}</div>
         <div class="stat-label">Total Goals</div>
       </div>
       <div class="stat-icon blue"><i class="fas fa-flag"></i></div>
     </div>
     <div class="progress-wrap">
       <div class="progress-bar-bg">
-        <div class="progress-bar-fill" style="width:{{ stats.overall_progress }}%"></div>
+        <div class="progress-bar-fill" style="width:{{ goal_stats.overall_progress }}%"></div>
       </div>
-      <div class="progress-sub" style="margin-top:4px;">{{ stats.overall_progress }}% overall saved</div>
+      <div class="progress-sub" style="margin-top:4px;">{{ goal_stats.overall_progress }}% overall</div>
     </div>
   </div>
-
   <div class="stat-card">
     <div class="stat-card-top">
-      <div>
-        <div class="stat-value">{{ stats.active_goals }}</div>
-        <div class="stat-label">Active Goals</div>
-      </div>
+      <div><div class="stat-value">{{ goal_stats.active }}</div><div class="stat-label">Active Goals</div></div>
       <div class="stat-icon orange"><i class="fas fa-fire"></i></div>
     </div>
   </div>
-
   <div class="stat-card">
     <div class="stat-card-top">
-      <div>
-        <div class="stat-value">{{ stats.completed_goals }}</div>
-        <div class="stat-label">Completed Goals</div>
-      </div>
+      <div><div class="stat-value">{{ goal_stats.completed }}</div><div class="stat-label">Completed</div></div>
       <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
     </div>
   </div>
-
-  <div class="stat-card">
-    <div class="stat-card-top">
-      <div>
-        <div class="stat-value">{{ stats.on_hold_goals }}</div>
-        <div class="stat-label">On Hold</div>
-      </div>
-      <div class="stat-icon gray"><i class="fas fa-pause-circle"></i></div>
-    </div>
-  </div>
-
-  <div class="stat-card">
-    <div class="stat-card-top">
-      <div>
-        <div class="stat-value" style="font-size:18px;">
-          ₹{{ "{:,.0f}".format(stats.total_target) }}
-        </div>
-        <div class="stat-label">Total Target</div>
-      </div>
-      <div class="stat-icon purple"><i class="fas fa-bullseye"></i></div>
-    </div>
-  </div>
-
   <div class="stat-card">
     <div class="stat-card-top">
       <div>
         <div class="stat-value" style="font-size:18px;color:var(--success);">
-          ₹{{ "{:,.0f}".format(stats.total_saved) }}
+          ₹{{ "{:,.0f}".format(goal_stats.total_saved) }}
         </div>
         <div class="stat-label">Total Saved</div>
       </div>
       <div class="stat-icon green"><i class="fas fa-piggy-bank"></i></div>
     </div>
   </div>
-
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-value" style="font-size:18px;">
+          ₹{{ "{:,.0f}".format(goal_stats.total_target) }}
+        </div>
+        <div class="stat-label">Total Target</div>
+      </div>
+      <div class="stat-icon purple"><i class="fas fa-bullseye"></i></div>
+    </div>
+  </div>
   <div class="stat-card">
     <div class="stat-card-top">
       <div>
         <div class="stat-value" style="font-size:18px;color:var(--warning);">
-          ₹{{ "{:,.0f}".format(stats.total_remaining) }}
+          ₹{{ "{:,.0f}".format(goal_stats.total_remaining) }}
         </div>
         <div class="stat-label">Total Remaining</div>
       </div>
       <div class="stat-icon orange"><i class="fas fa-hourglass-half"></i></div>
     </div>
   </div>
-
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div><div class="stat-value">{{ goal_stats.on_hold }}</div><div class="stat-label">On Hold</div></div>
+      <div class="stat-icon gray"><i class="fas fa-pause-circle"></i></div>
+    </div>
+  </div>
   <div class="stat-card">
     <div class="stat-card-top">
       <div>
-        <div class="stat-value" style="color:var(--primary);">{{ stats.overall_progress }}%</div>
+        <div class="stat-value" style="color:var(--primary);">{{ goal_stats.overall_progress }}%</div>
         <div class="stat-label">Overall Progress</div>
       </div>
       <div class="stat-icon indigo"><i class="fas fa-chart-pie"></i></div>
     </div>
     <div class="progress-wrap">
       <div class="progress-bar-bg">
-        <div class="progress-bar-fill" style="width:{{ stats.overall_progress }}%"></div>
+        <div class="progress-bar-fill" style="width:{{ goal_stats.overall_progress }}%"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ─── Charts Row ───────────────────────────────────────────────────────── -->
-<div class="charts-grid">
+<!-- ─── Section: Investments ──────────────────────────────────────────────────── -->
+<div class="section-heading">
+  <i class="fas fa-chart-pie"></i> Investment Summary
+</div>
+<div class="stats-grid-5 mb-24">
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div><div class="stat-value">{{ inv_stats.total }}</div><div class="stat-label">Total Investments</div></div>
+      <div class="stat-icon indigo"><i class="fas fa-coins"></i></div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-value" style="font-size:18px;">₹{{ "{:,.0f}".format(inv_stats.total_invested) }}</div>
+        <div class="stat-label">Total Invested</div>
+      </div>
+      <div class="stat-icon blue"><i class="fas fa-arrow-trend-up"></i></div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-value" style="font-size:18px;color:var(--success);">
+          ₹{{ "{:,.0f}".format(inv_stats.current_value) }}
+        </div>
+        <div class="stat-label">Portfolio Value</div>
+      </div>
+      <div class="stat-icon teal"><i class="fas fa-wallet"></i></div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-value" style="font-size:18px;color:{% if inv_stats.total_pl >= 0 %}var(--success){% else %}var(--danger){% endif %};">
+          {% if inv_stats.total_pl >= 0 %}+{% endif %}₹{{ "{:,.0f}".format(inv_stats.total_pl) }}
+        </div>
+        <div class="stat-label">Total P&amp;L</div>
+      </div>
+      <div class="stat-icon {% if inv_stats.total_pl >= 0 %}green{% else %}red{% endif %}">
+        <i class="fas {% if inv_stats.total_pl >= 0 %}fa-circle-arrow-up{% else %}fa-circle-arrow-down{% endif %}"></i>
+      </div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-value" style="color:{% if inv_stats.avg_return >= 0 %}var(--success){% else %}var(--danger){% endif %};">
+          {% if inv_stats.avg_return >= 0 %}+{% endif %}{{ inv_stats.avg_return }}%
+        </div>
+        <div class="stat-label">Avg. Return</div>
+      </div>
+      <div class="stat-icon teal"><i class="fas fa-percent"></i></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Charts ────────────────────────────────────────────────────────────────── -->
+<div class="charts-grid mb-24">
   <div class="card">
     <div class="card-header">
       <span class="card-title"><i class="fas fa-chart-pie"></i> Goal Status</span>
     </div>
     <div class="card-body">
-      <div class="chart-container" style="height:220px;">
-        <canvas id="statusChart"></canvas>
-      </div>
+      <div class="chart-container"><canvas id="statusChart"></canvas></div>
     </div>
   </div>
-
   <div class="card">
     <div class="card-header">
       <span class="card-title"><i class="fas fa-chart-bar"></i> Category Distribution</span>
     </div>
     <div class="card-body">
-      <div class="chart-container" style="height:220px;">
-        <canvas id="categoryChart"></canvas>
-      </div>
+      <div class="chart-container"><canvas id="categoryChart"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fas fa-chart-donut"></i> Investment Types</span>
+    </div>
+    <div class="card-body">
+      <div class="chart-container"><canvas id="invTypeChart"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fas fa-chart-column"></i> Invested vs Portfolio Value</span>
+    </div>
+    <div class="card-body">
+      <div class="chart-container"><canvas id="invVsCurrentChart"></canvas></div>
     </div>
   </div>
 </div>
 
-<div class="charts-grid">
+<!-- ─── Target vs Saved + Trend ───────────────────────────────────────────────── -->
+<div class="charts-grid mb-24">
   <div class="card">
     <div class="card-header">
-      <span class="card-title"><i class="fas fa-chart-column"></i> Target vs Saved</span>
+      <span class="card-title"><i class="fas fa-chart-column"></i> Goal Target vs Saved</span>
     </div>
     <div class="card-body">
-      <div class="chart-container" style="height:220px;">
-        <canvas id="targetVsSavedChart"></canvas>
-      </div>
+      <div class="chart-container"><canvas id="targetVsSavedChart"></canvas></div>
     </div>
   </div>
-
   <div class="card">
     <div class="card-header">
       <span class="card-title"><i class="fas fa-chart-line"></i> Monthly Savings Trend</span>
     </div>
     <div class="card-body">
-      <div class="chart-container" style="height:220px;">
-        <canvas id="trendChart"></canvas>
-      </div>
+      <div class="chart-container"><canvas id="trendChart"></canvas></div>
     </div>
   </div>
 </div>
 
-<!-- ─── Recent Goals ─────────────────────────────────────────────────────── -->
-<div class="card mt-24">
-  <div class="card-header">
-    <span class="card-title"><i class="fas fa-clock-rotate-left"></i> Recent Goals</span>
-    <a href="{{ url_for('goals.goals_list') }}" class="btn btn-outline btn-sm">View All</a>
-  </div>
-  <div class="card-body" style="padding:0;">
-    {% if recent_goals %}
-      <div style="padding:16px 20px; display:flex; flex-direction:column; gap:12px;">
-        {% for goal in recent_goals %}
-        <div style="display:flex; align-items:center; gap:14px; padding:12px 0;
-                    border-bottom:1px solid var(--border-light);">
-          <!-- Category icon -->
-          <div class="stat-icon blue" style="width:36px;height:36px;font-size:14px;flex-shrink:0;">
-            <i class="fas {% if goal.category == 'Education' %}fa-graduation-cap
-              {% elif goal.category == 'Electronics' %}fa-laptop
-              {% elif goal.category == 'Travel' %}fa-plane
-              {% elif goal.category == 'Vehicle' %}fa-car
-              {% elif goal.category == 'Emergency' %}fa-shield-halved
-              {% elif goal.category == 'Health' %}fa-heart-pulse
-              {% else %}fa-star{% endif %}"></i>
+<!-- ─── Recent Goals & Investments ───────────────────────────────────────────── -->
+<div class="col-2 mb-24">
+  <!-- Recent Goals -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fas fa-clock-rotate-left"></i> Recent Goals</span>
+      <a href="{{ url_for('goals_list') }}" class="btn btn-outline btn-sm">View All</a>
+    </div>
+    <div class="card-body" style="padding:0;">
+      {% if recent_goals %}
+        <div style="padding:12px 16px;display:flex;flex-direction:column;gap:10px;">
+          {% for goal in recent_goals %}
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-light);">
+            <div class="stat-icon blue" style="width:34px;height:34px;font-size:13px;flex-shrink:0;">
+              <i class="fas {% if goal.category == 'Education' %}fa-graduation-cap{% elif goal.category == 'Electronics' %}fa-laptop{% elif goal.category == 'Travel' %}fa-plane{% elif goal.category == 'Vehicle' %}fa-car{% elif goal.category == 'Emergency' %}fa-shield-halved{% else %}fa-star{% endif %}"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:13px;margin-bottom:4px;">{{ goal.goal_name }}
+                <span class="badge badge-{{ goal.status_class }}" style="font-size:10px;margin-left:4px;">{{ goal.status }}</span>
+              </div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:{{ goal.progress_percentage }}%"></div></div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">{{ goal.progress_percentage }}% — ₹{{ "{:,.0f}".format(goal.current_amount) }} of ₹{{ "{:,.0f}".format(goal.target_amount) }}</div>
+            </div>
+            <a href="{{ url_for('goal_detail', goal_id=goal.id) }}" class="btn btn-ghost btn-sm"><i class="fas fa-arrow-right"></i></a>
           </div>
-          <!-- Info -->
-          <div style="flex:1; min-width:0;">
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
-              <span style="font-weight:600; font-size:13.5px; color:var(--text-primary);">
-                {{ goal.goal_name }}
-              </span>
-              <span class="badge badge-{{ goal.status_class }}">{{ goal.status }}</span>
-              <span class="badge badge-{{ goal.priority_class }}" style="font-size:10px;">
-                {{ goal.priority }}
-              </span>
-            </div>
-            <div class="progress-bar-bg">
-              <div class="progress-bar-fill {% if goal.progress_percentage >= 100 %}green{% elif goal.progress_percentage >= 50 %}{% else %}{% endif %}"
-                   style="width:{{ goal.progress_percentage }}%"></div>
-            </div>
-            <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:11.5px; color:var(--text-muted);">
-              <span>₹{{ "{:,.0f}".format(goal.current_amount) }} saved</span>
-              <span>{{ goal.progress_percentage }}% of ₹{{ "{:,.0f}".format(goal.target_amount) }}</span>
-            </div>
-          </div>
-          <!-- Action -->
-          <a href="{{ url_for('goals.goal_detail', goal_id=goal.id) }}"
-             class="btn btn-outline btn-sm" style="flex-shrink:0;">
-            <i class="fas fa-eye"></i>
-          </a>
+          {% endfor %}
         </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="empty-state">
-        <i class="fas fa-flag"></i>
-        <h3>No goals yet</h3>
-        <p>Create your first financial goal to get started.</p>
-        <a href="{{ url_for('goals.goal_planning') }}" class="btn btn-primary">
-          <i class="fas fa-plus"></i> Create Goal
-        </a>
-      </div>
-    {% endif %}
+      {% else %}
+        <div class="empty-state" style="padding:28px;">
+          <i class="fas fa-flag" style="font-size:28px;"></i>
+          <h3 style="font-size:15px;">No goals yet</h3>
+          <a href="{{ url_for('goal_planning') }}" class="btn btn-primary btn-sm">Create Goal</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Recent Investments -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fas fa-coins"></i> Recent Investments</span>
+      <a href="{{ url_for('investments_list') }}" class="btn btn-outline btn-sm">View All</a>
+    </div>
+    <div class="card-body" style="padding:0;">
+      {% if recent_invs %}
+        <div style="padding:12px 16px;display:flex;flex-direction:column;gap:10px;">
+          {% for inv in recent_invs %}
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-light);">
+            <div class="stat-icon {% if inv.profit_loss >= 0 %}green{% else %}red{% endif %}" style="width:34px;height:34px;font-size:13px;flex-shrink:0;">
+              <i class="fas {% if inv.investment_type == 'Stocks' %}fa-chart-line{% elif inv.investment_type == 'Gold' %}fa-coins{% elif 'Fund' in inv.investment_type %}fa-chart-pie{% elif 'Deposit' in inv.investment_type %}fa-building-columns{% else %}fa-sack-dollar{% endif %}"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:13px;">{{ inv.investment_name }}</div>
+              <div style="font-size:11px;color:var(--text-muted);">{{ inv.investment_type }} · ₹{{ "{:,.0f}".format(inv.invested_amount) }} invested</div>
+              <div style="font-size:12px;font-weight:600;color:{% if inv.profit_loss >= 0 %}var(--success){% else %}var(--danger){% endif %};">
+                {% if inv.profit_loss >= 0 %}▲{% else %}▼{% endif %}
+                ₹{{ "{:,.0f}".format(inv.profit_loss|abs) }} ({{ inv.return_percentage }}%)
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state" style="padding:28px;">
+          <i class="fas fa-coins" style="font-size:28px;"></i>
+          <h3 style="font-size:15px;">No investments yet</h3>
+          <a href="{{ url_for('investment_new') }}" class="btn btn-primary btn-sm">Add Investment</a>
+        </div>
+      {% endif %}
+    </div>
   </div>
 </div>
 {% endblock %}

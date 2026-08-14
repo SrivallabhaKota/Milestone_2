@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Error {{ code }} — FinGoal{% endblock %}
+{% block page_title %}Error{% endblock %}
+{% block content %}
+<div class="empty-state" style="padding:60px 20px;">
+  <i class="fas fa-circle-exclamation" style="font-size:48px;color:var(--danger);"></i>
+  <h3 style="font-size:22px;">{{ code }} Error</h3>
+  <p style="max-width:400px;">{{ message }}</p>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+    <i class="fas fa-home"></i> Go to Dashboard
+  </a>
+</div>
+{% endblock %}

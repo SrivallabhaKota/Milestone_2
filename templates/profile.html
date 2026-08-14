@@ -5,187 +5,157 @@
 {% block content %}
 <div class="page-header">
   <div class="page-header-left">
-    <h1>My Profile</h1>
-    <p>Manage your account information and preferences.</p>
+    <h1>Personal Financial Profile</h1>
+    <p>Your financial preferences and portfolio overview.</p>
   </div>
 </div>
 
-<!-- ─── Profile Header ──────────────────────────────────────────────────── -->
+<!-- ─── Profile Header ─────────────────────────────────────────────────────── -->
 <div class="profile-header">
-  <div class="profile-avatar-wrap">
-    {% if current_user.profile_image %}
-      <img src="{{ url_for('static', filename='images/avatars/' ~ current_user.profile_image) }}"
-           alt="Profile" class="profile-avatar" />
-    {% else %}
-      <div class="profile-avatar-initials">{{ current_user.name[:2].upper() }}</div>
-    {% endif %}
-    <label class="profile-avatar-upload" for="avatarUploadBtn" title="Change photo">
-      <i class="fas fa-camera"></i>
-    </label>
+  <div class="profile-avatar-initials">
+    {{ (prof.get('name', 'FG') or 'FG')[:2].upper() }}
   </div>
   <div class="profile-info">
-    <h2>{{ current_user.name }}</h2>
-    <p>{{ current_user.email }}</p>
-    {% if current_user.phone %}<p>{{ current_user.phone }}</p>{% endif %}
-    <p style="margin-top:4px; font-size:12px; color:var(--text-muted);">
-      <i class="fas fa-calendar-plus fa-xs"></i>
-      Member since {{ current_user.created_at.strftime('%B %Y') }}
-    </p>
+    <h2>{{ prof.get('name', 'My Profile') }}</h2>
+    {% if prof.get('email') %}<p>{{ prof.email }}</p>{% endif %}
+    {% if prof.get('phone') %}<p>{{ prof.phone }}</p>{% endif %}
+    {% if prof.get('notes') %}<p style="font-size:13px;color:var(--text-muted);margin-top:4px;">{{ prof.notes }}</p>{% endif %}
   </div>
 </div>
 
-<!-- ─── Stats Row ────────────────────────────────────────────────────────── -->
-<div class="profile-stats-row">
+<!-- ─── Stats Row ─────────────────────────────────────────────────────────────── -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
   <div class="profile-stat">
-    <div class="profile-stat-value">{{ current_user.total_goals }}</div>
+    <div class="profile-stat-value">{{ goal_stats.total }}</div>
     <div class="profile-stat-label">Total Goals</div>
   </div>
   <div class="profile-stat">
-    <div class="profile-stat-value" style="color:var(--primary);">{{ current_user.active_goals }}</div>
-    <div class="profile-stat-label">Active</div>
+    <div class="profile-stat-value" style="color:var(--primary);">{{ goal_stats.active }}</div>
+    <div class="profile-stat-label">Active Goals</div>
   </div>
   <div class="profile-stat">
-    <div class="profile-stat-value" style="color:var(--success);">{{ current_user.completed_goals }}</div>
+    <div class="profile-stat-value" style="color:var(--success);">{{ goal_stats.completed }}</div>
     <div class="profile-stat-label">Completed</div>
   </div>
   <div class="profile-stat">
-    <div class="profile-stat-value" style="color:var(--success); font-size:15px;">
-      ₹{{ "{:,.0f}".format(current_user.total_saved) }}
+    <div class="profile-stat-value" style="font-size:15px;color:var(--success);">
+      ₹{{ "{:,.0f}".format(goal_stats.total_saved) }}
     </div>
     <div class="profile-stat-label">Total Saved</div>
   </div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;">
   <div class="profile-stat">
-    <div class="profile-stat-value" style="color:var(--warning); font-size:15px;">
-      ₹{{ "{:,.0f}".format(current_user.total_target) }}
+    <div class="profile-stat-value">{{ inv_stats.total }}</div>
+    <div class="profile-stat-label">Investments</div>
+  </div>
+  <div class="profile-stat">
+    <div class="profile-stat-value" style="font-size:15px;">
+      ₹{{ "{:,.0f}".format(inv_stats.total_invested) }}
     </div>
-    <div class="profile-stat-label">Total Target</div>
+    <div class="profile-stat-label">Total Invested</div>
+  </div>
+  <div class="profile-stat">
+    <div class="profile-stat-value" style="font-size:15px;color:var(--success);">
+      ₹{{ "{:,.0f}".format(inv_stats.current_value) }}
+    </div>
+    <div class="profile-stat-label">Portfolio Value</div>
+  </div>
+  <div class="profile-stat">
+    <div class="profile-stat-value" style="font-size:15px;color:{% if inv_stats.total_pl >= 0 %}var(--success){% else %}var(--danger){% endif %};">
+      {% if inv_stats.total_pl >= 0 %}+{% endif %}₹{{ "{:,.0f}".format(inv_stats.total_pl) }}
+    </div>
+    <div class="profile-stat-label">Total P&amp;L</div>
   </div>
 </div>
 
-<!-- ─── Two-Column Layout ────────────────────────────────────────────────── -->
-<div class="col-2" style="align-items:start;">
-
-  <!-- Edit Profile Form -->
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title"><i class="fas fa-user-edit"></i> Edit Profile</span>
-    </div>
-    <div class="card-body">
-      <form method="POST" action="{{ url_for('profile.profile') }}"
-            enctype="multipart/form-data" novalidate>
-
-        <!-- Hidden file input triggered by camera icon -->
-        <input type="file" id="avatarUploadBtn" name="profile_image"
-               accept="image/*" style="display:none;"
-               onchange="this.form.submit()" />
-
-        <div class="form-group">
-          <label class="form-label" for="edit_name">Full Name <span>*</span></label>
-          <input type="text" id="edit_name" name="name" class="form-control"
-                 value="{{ current_user.name }}" required />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="edit_phone">Phone Number</label>
-          <input type="tel" id="edit_phone" name="phone" class="form-control"
-                 value="{{ current_user.phone or '' }}"
-                 placeholder="+91 99999 99999" />
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="edit_currency">Currency</label>
-            <select id="edit_currency" name="currency" class="form-control">
-              <option value="₹" {% if current_user.currency == '₹' %}selected{% endif %}>₹ Indian Rupee</option>
-              <option value="$" {% if current_user.currency == '$' %}selected{% endif %}>$ US Dollar</option>
-              <option value="€" {% if current_user.currency == '€' %}selected{% endif %}>€ Euro</option>
-              <option value="£" {% if current_user.currency == '£' %}selected{% endif %}>£ British Pound</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="edit_capacity">Monthly Saving Capacity</label>
-            <div class="input-group">
-              <span class="input-prefix">₹</span>
-              <input type="number" id="edit_capacity" name="monthly_saving_capacity"
-                     class="form-control" step="100" min="0"
-                     value="{{ current_user.monthly_saving_capacity or '' }}"
-                     placeholder="e.g. 10000" />
-            </div>
-            <div class="form-hint">Used for smart saving recommendations.</div>
-          </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary">
-          <i class="fas fa-save"></i> Save Changes
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Change Password -->
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title"><i class="fas fa-lock"></i> Change Password</span>
-    </div>
-    <div class="card-body">
-      <form method="POST" action="{{ url_for('profile.change_password') }}" novalidate>
-        <div class="form-group">
-          <label class="form-label" for="current_password">Current Password <span>*</span></label>
-          <input type="password" id="current_password" name="current_password"
-                 class="form-control" placeholder="Enter current password" required />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="new_password">New Password <span>*</span></label>
-          <input type="password" id="new_password" name="new_password"
-                 class="form-control" placeholder="Minimum 6 characters" required />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="confirm_password">Confirm New Password <span>*</span></label>
-          <input type="password" id="confirm_password" name="confirm_password"
-                 class="form-control" placeholder="Re-enter new password" required />
-        </div>
-        <button type="submit" class="btn btn-outline-primary">
-          <i class="fas fa-key"></i> Update Password
-        </button>
-      </form>
-    </div>
-  </div>
-
-</div>
-
-<!-- ─── Account Info Card ───────────────────────────────────────────────── -->
-<div class="card mt-16">
+<!-- ─── Edit Form ──────────────────────────────────────────────────────────── -->
+<div class="card">
   <div class="card-header">
-    <span class="card-title"><i class="fas fa-shield-halved"></i> Account Information</span>
+    <span class="card-title"><i class="fas fa-user-edit"></i> Edit Profile</span>
   </div>
-  <div class="card-body" style="padding:0;">
-    <div class="info-row" style="padding:12px 20px;">
-      <span class="info-label">Email Address</span>
-      <span class="info-value">{{ current_user.email }}</span>
-    </div>
-    <div class="info-row" style="padding:12px 20px;">
-      <span class="info-label">Account Created</span>
-      <span class="info-value">{{ current_user.created_at.strftime('%d %B %Y, %I:%M %p') }}</span>
-    </div>
-    <div class="info-row" style="padding:12px 20px;">
-      <span class="info-label">Preferred Currency</span>
-      <span class="info-value">{{ current_user.currency }}</span>
-    </div>
-    <div class="info-row" style="padding:12px 20px;">
-      <span class="info-label">Monthly Saving Capacity</span>
-      <span class="info-value">
-        {% if current_user.monthly_saving_capacity %}
-          ₹{{ "{:,.0f}".format(current_user.monthly_saving_capacity) }}/month
-        {% else %}
-          Not set
-        {% endif %}
-      </span>
-    </div>
-    <div style="padding:12px 20px; border-top:1px solid var(--border-light);">
-      <a href="{{ url_for('auth.logout') }}" class="btn btn-outline" style="border-color:var(--danger); color:var(--danger);">
-        <i class="fas fa-sign-out-alt"></i> Logout
-      </a>
-    </div>
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('profile') }}" novalidate>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="name">Full Name <span>*</span></label>
+          <input type="text" id="name" name="name" class="form-control"
+                 value="{{ prof.get('name', '') }}" placeholder="Your name" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input type="email" id="email" name="email" class="form-control"
+                 value="{{ prof.get('email', '') }}" placeholder="your@email.com" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="phone">Phone</label>
+          <input type="tel" id="phone" name="phone" class="form-control"
+                 value="{{ prof.get('phone', '') }}" placeholder="+91 99999 99999" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="currency">Preferred Currency</label>
+          <select id="currency" name="currency" class="form-control">
+            <option value="₹" {% if prof.get('currency') == '₹' %}selected{% endif %}>₹ Indian Rupee</option>
+            <option value="$" {% if prof.get('currency') == '$' %}selected{% endif %}>$ US Dollar</option>
+            <option value="€" {% if prof.get('currency') == '€' %}selected{% endif %}>€ Euro</option>
+            <option value="£" {% if prof.get('currency') == '£' %}selected{% endif %}>£ British Pound</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="monthly_saving_capacity">Monthly Saving Capacity</label>
+          <div class="input-group">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="monthly_saving_capacity" name="monthly_saving_capacity"
+                   class="form-control" step="100" min="0"
+                   value="{{ prof.get('monthly_saving_capacity', '') }}"
+                   placeholder="e.g. 10000" />
+          </div>
+          <div class="form-hint">Used for smart saving recommendations on goal pages.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="monthly_investment_capacity">Monthly Investment Capacity</label>
+          <div class="input-group">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="monthly_investment_capacity" name="monthly_investment_capacity"
+                   class="form-control" step="100" min="0"
+                   value="{{ prof.get('monthly_investment_capacity', '') }}"
+                   placeholder="e.g. 5000" />
+          </div>
+          <div class="form-hint">Your planned monthly investment amount.</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="prof_notes">Financial Notes / Description</label>
+        <textarea id="prof_notes" name="notes" class="form-control"
+                  placeholder="Short note about your financial goals or strategy...">{{ prof.get('notes', '') }}</textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> Save Profile
+      </button>
+    </form>
   </div>
+</div>
+
+<!-- ─── Quick Links ───────────────────────────────────────────────────────────── -->
+<div class="col-3 mt-16">
+  <a href="{{ url_for('goal_planning') }}" class="card" style="display:block;text-align:center;padding:20px;text-decoration:none;transition:var(--transition);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+    <i class="fas fa-bullseye" style="font-size:24px;color:var(--primary);margin-bottom:8px;display:block;"></i>
+    <strong style="font-size:14px;color:var(--text-primary);">Create Goal</strong>
+    <p style="font-size:12.5px;color:var(--text-muted);margin-top:3px;">Plan a new financial goal</p>
+  </a>
+  <a href="{{ url_for('investment_new') }}" class="card" style="display:block;text-align:center;padding:20px;text-decoration:none;transition:var(--transition);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+    <i class="fas fa-coins" style="font-size:24px;color:var(--success);margin-bottom:8px;display:block;"></i>
+    <strong style="font-size:14px;color:var(--text-primary);">Add Investment</strong>
+    <p style="font-size:12.5px;color:var(--text-muted);margin-top:3px;">Track a new investment</p>
+  </a>
+  <a href="{{ url_for('dashboard') }}" class="card" style="display:block;text-align:center;padding:20px;text-decoration:none;transition:var(--transition);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+    <i class="fas fa-th-large" style="font-size:24px;color:var(--warning);margin-bottom:8px;display:block;"></i>
+    <strong style="font-size:14px;color:var(--text-primary);">Dashboard</strong>
+    <p style="font-size:12.5px;color:var(--text-muted);margin-top:3px;">View full overview</p>
+  </a>
 </div>
 {% endblock %}
